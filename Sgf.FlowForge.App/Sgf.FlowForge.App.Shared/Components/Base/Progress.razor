@@ -1,0 +1,94 @@
+﻿<div class="w-full">
+    @if (ShowLabel)
+    {
+        <div class="flex items-center justify-between mb-1.5">
+            <span class="text-xs font-medium text-[var(--color-text-primary)]">
+                @Label
+            </span>
+            <span class="text-[0.625rem] text-[var(--color-text-secondary)]">
+                @Value%
+            </span>
+        </div>
+    }
+
+    <div class="@GetContainerClasses()">
+        <div class="@GetBarClasses()" style="width: @Value%">
+            @if (ShowPercentage && !ShowLabel)
+            {
+                <span class="text-[0.625rem] font-medium text-white px-2">@Value%</span>
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter] public int Value { get; set; }
+    [Parameter] public string? Label { get; set; }
+    [Parameter] public bool ShowLabel { get; set; } = true;
+    [Parameter] public bool ShowPercentage { get; set; }
+    [Parameter] public string Color { get; set; } = "primary"; // primary, success, warning, error
+    [Parameter] public string Size { get; set; } = "md"; // sm, md, lg
+    [Parameter] public bool Striped { get; set; }
+    [Parameter] public bool Animated { get; set; }
+
+    private string GetContainerClasses()
+    {
+        var classes = new List<string>
+        {
+            "w-full bg-[var(--color-gray-200)] rounded-full overflow-hidden"
+        };
+
+        classes.Add(Size switch
+        {
+            "sm" => "h-1.5",
+            "md" => "h-2.5",
+            "lg" => "h-4",
+            _ => "h-2.5"
+        });
+
+        return string.Join(" ", classes);
+    }
+
+    private string GetBarClasses()
+    {
+        var classes = new List<string>
+        {
+            "h-full rounded-full transition-all duration-300",
+            "flex items-center justify-end"
+        };
+
+        // 颜色
+        classes.Add(Color switch
+        {
+            "primary" => "bg-gradient-to-r from-[var(--color-primary-500)] to-[var(--color-primary-600)]",
+            "success" => "bg-gradient-to-r from-[var(--color-success-500)] to-[var(--color-success-600)]",
+            "warning" => "bg-gradient-to-r from-[var(--color-warning-500)] to-[var(--color-warning-600)]",
+            "error" => "bg-gradient-to-r from-[var(--color-error-500)] to-[var(--color-error-600)]",
+            _ => "bg-gradient-to-r from-[var(--color-primary-500)] to-[var(--color-primary-600)]"
+        });
+
+        if (Striped)
+        {
+            classes.Add("bg-[linear-gradient(45deg,rgba(255,255,255,.15)_25%,transparent_25%,transparent_50%,rgba(255,255,255,.15)_50%,rgba(255,255,255,.15)_75%,transparent_75%,transparent)] bg-[length:1rem_1rem]");
+        }
+
+        if (Animated)
+        {
+            classes.Add("animate-[progress_1s_linear_infinite]");
+        }
+
+        return string.Join(" ", classes);
+    }
+}
+
+<style>
+    @@keyframes progress {
+        0% {
+            background-position: 1rem 0;
+        }
+
+        100% {
+            background-position: 0 0;
+        }
+    }
+</style>

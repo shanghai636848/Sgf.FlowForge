@@ -1,0 +1,96 @@
+﻿@using Sgf.FlowForge.App.Shared.Services
+@* Components/Layout/Breadcrumb.razor *@
+@inject NavigationManager Navigation
+@inject LocalizationService L
+
+<nav aria-label="breadcrumb" class="flex items-center gap-2 text-xs">
+    <a href="/" class="flex items-center gap-1.5 text-[var(--color-text-tertiary)] hover:text-[var(--color-primary-500)] transition-colors">
+        <i class="fas fa-home text-[0.625rem]"></i>
+        <span>@L["nav.home"]</span>
+    </a>
+
+    @foreach (var (item, index) in _breadcrumbs.Select((item, i) => (item, i)))
+    {
+        <i class="fas fa-chevron-right text-[0.5rem] text-[var(--color-text-tertiary)]"></i>
+
+        @if (index == _breadcrumbs.Count - 1)
+        {
+            <span class="font-semibold text-[var(--color-text-primary)]">
+                @item.Title
+            </span>
+        }
+        else
+        {
+            <a href="@item.Url"
+               class="text-[var(--color-text-tertiary)] hover:text-[var(--color-primary-500)] transition-colors">
+                @item.Title
+            </a>
+        }
+    }
+</nav>
+
+@code {
+    private List<BreadcrumbItem> _breadcrumbs = new();
+
+    protected override void OnInitialized()
+    {
+        UpdateBreadcrumbs();
+        Navigation.LocationChanged += OnLocationChanged;
+    }
+
+    private void OnLocationChanged(object? sender, LocationChangedEventArgs e)
+    {
+        UpdateBreadcrumbs();
+        InvokeAsync(StateHasChanged);
+    }
+
+    private void UpdateBreadcrumbs()
+    {
+        _breadcrumbs.Clear();
+
+        var uri = new Uri(Navigation.Uri);
+        var path = uri.AbsolutePath.Trim('/');
+
+        if (string.IsNullOrEmpty(path))
+            return;
+
+        var segments = path.Split('/', StringSplitOptions.RemoveEmptyEntries);
+        var currentPath = "";
+
+        foreach (var segment in segments)
+        {
+            currentPath += $"/{segment}";
+            _breadcrumbs.Add(new BreadcrumbItem
+            {
+                Title = GetSegmentTitle(segment),
+                Url = currentPath
+            });
+        }
+    }
+
+    private string GetSegmentTitle(string segment)
+    {
+        // 尝试从本地化资源获取标题
+        var key = $"nav.{segment}";
+        var title = L[key];
+
+        // 如果没有找到本地化资源，使用首字母大写
+        if (title == key)
+        {
+            return char.ToUpper(segment[0]) + segment.Substring(1);
+        }
+
+        return title;
+    }
+
+    public void Dispose()
+    {
+        Navigation.LocationChanged -= OnLocationChanged;
+    }
+
+    private class BreadcrumbItem
+    {
+        public string Title { get; set; } = string.Empty;
+        public string Url { get; set; } = string.Empty;
+    }
+}

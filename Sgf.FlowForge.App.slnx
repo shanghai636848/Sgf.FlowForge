@@ -1,0 +1,14 @@
+<Solution>
+  <Project Path="Sgf.FlowForge.Api/Sgf.FlowForge.Api.csproj" />
+  <Project Path="Sgf.FlowForge.App/Sgf.FlowForge.App.Shared/Sgf.FlowForge.App.Shared.csproj" />
+  <Project Path="Sgf.FlowForge.App/Sgf.FlowForge.App.Web.Client/Sgf.FlowForge.App.Web.Client.csproj" />
+  <Project Path="Sgf.FlowForge.App/Sgf.FlowForge.App.Web/Sgf.FlowForge.App.Web.csproj" />
+  <Project Path="Sgf.FlowForge.App/Sgf.FlowForge.App/Sgf.FlowForge.App.csproj">
+    <Deploy Solution="Debug|*" />
+  </Project>
+  <Project Path="Sgf.FlowForge.Application.Contracts/Sgf.FlowForge.Application.Contracts.csproj" />
+  <Project Path="Sgf.FlowForge.Application/Sgf.FlowForge.Application.csproj" />
+  <Project Path="Sgf.FlowForge.Domain.Shared/Sgf.FlowForge.Domain.Shared.csproj" />
+  <Project Path="Sgf.FlowForge.Domain/Sgf.FlowForge.Domain.csproj" />
+  <Project Path="Sgf.FlowForge.Persistence/Sgf.FlowForge.Persistence.csproj" />
+</Solution>

@@ -1,0 +1,105 @@
+﻿@using Sgf.FlowForge.App.Shared.Models
+<div class="@GetAvatarClasses()" @attributes="AdditionalAttributes">
+    @if (!string.IsNullOrEmpty(ImageSrc))
+    {
+        <img src="@ImageSrc" alt="@Alt" class="w-full h-full object-cover" />
+    }
+    else if (!string.IsNullOrEmpty(Icon))
+    {
+        <i class="@Icon"></i>
+    }
+    else if (!string.IsNullOrEmpty(Text))
+    {
+        <span class="font-semibold">@GetInitials(Text)</span>
+    }
+    else
+    {
+        <i class="fas fa-user"></i>
+    }
+
+    @if (ShowStatus)
+    {
+        <span class="@GetStatusClasses()"></span>
+    }
+</div>
+
+@code {
+    [Parameter] public string? ImageSrc { get; set; }
+    [Parameter] public string? Icon { get; set; }
+    [Parameter] public string? Text { get; set; }
+    [Parameter] public string Alt { get; set; } = "Avatar";
+    [Parameter] public AvatarSize Size { get; set; } = AvatarSize.Medium;
+    [Parameter] public bool ShowStatus { get; set; }
+    [Parameter] public bool StatusOnline { get; set; } = true;
+    [Parameter] public bool Rounded { get; set; } = true;
+    [Parameter(CaptureUnmatchedValues = true)]
+    public Dictionary<string, object>? AdditionalAttributes { get; set; }
+
+    private string GetAvatarClasses()
+    {
+        var classes = new List<string>
+        {
+            "relative inline-flex items-center justify-center",
+            "overflow-hidden flex-shrink-0",
+            "bg-gradient-to-br from-[var(--color-primary-400)] to-[var(--color-primary-600)]",
+            "text-white"
+        };
+
+        // 尺寸
+        classes.Add(Size switch
+        {
+            AvatarSize.ExtraSmall => "w-6 h-6 text-[0.625rem]",
+            AvatarSize.Small => "w-8 h-8 text-[0.6875rem]",
+            AvatarSize.Medium => "w-10 h-10 text-xs",
+            AvatarSize.Large => "w-12 h-12 text-xs",
+            AvatarSize.ExtraLarge => "w-16 h-16 text-sm",
+            _ => "w-10 h-10 text-xs"
+        });
+
+        // 形状
+        classes.Add(Rounded ? "rounded-full" : "rounded-md");
+
+        return string.Join(" ", classes);
+    }
+
+    private string GetStatusClasses()
+    {
+        var classes = new List<string>
+        {
+            "absolute bottom-0 right-0",
+            "border-2 border-[var(--color-bg-base)]",
+            "rounded-full"
+        };
+
+        // 尺寸
+        classes.Add(Size switch
+        {
+            AvatarSize.ExtraSmall => "w-1.5 h-1.5",
+            AvatarSize.Small => "w-2 h-2",
+            AvatarSize.Medium => "w-2.5 h-2.5",
+            AvatarSize.Large => "w-3 h-3",
+            AvatarSize.ExtraLarge => "w-4 h-4",
+            _ => "w-2.5 h-2.5"
+        });
+
+        // 状态颜色
+        classes.Add(StatusOnline
+            ? "bg-[var(--color-success-500)]"
+            : "bg-[var(--color-gray-400)]");
+
+        return string.Join(" ", classes);
+    }
+
+    private string GetInitials(string text)
+    {
+        if (string.IsNullOrWhiteSpace(text))
+            return "?";
+
+        var parts = text.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        if (parts.Length >= 2)
+        {
+            return $"{parts[0][0]}{parts[1][0]}".ToUpper();
+        }
+        return text[0].ToString().ToUpper();
+    }
+}

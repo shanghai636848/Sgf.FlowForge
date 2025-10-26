@@ -1,0 +1,62 @@
+﻿@using Sgf.FlowForge.App.Shared.Services
+@* Components/Layout/Footer.razor *@
+@inject LocalizationService L
+
+<footer class="border-t border-[var(--color-border-secondary)] bg-[var(--color-bg-secondary)]">
+    <div class="container mx-auto px-4 py-4">
+        <div class="flex flex-col md:flex-row items-center justify-between gap-4">
+
+            <!-- 左侧：版权信息 -->
+            <div class="flex flex-col md:flex-row items-center gap-2 text-[0.625rem] text-[var(--color-text-tertiary)]">
+                <span>© 2025 FlowForge. @L["footer.copyright"]</span>
+                <span class="hidden md:inline">|</span>
+                <span>Powered by .NET 10 + Blazor WebAssembly</span>
+            </div>
+
+            <!-- 中间：快速链接 -->
+            <div class="flex items-center gap-4">
+                <a href="/docs"
+                   class="text-[0.625rem] text-[var(--color-text-tertiary)] hover:text-[var(--color-primary-500)] transition-colors">
+                    <i class="fas fa-book mr-1"></i>
+                    @L["footer.documentation"]
+                </a>
+                <a href="/api"
+                   class="text-[0.625rem] text-[var(--color-text-tertiary)] hover:text-[var(--color-primary-500)] transition-colors">
+                    <i class="fas fa-code mr-1"></i>
+                    @L["footer.api"]
+                </a>
+                <a href="/support"
+                   class="text-[0.625rem] text-[var(--color-text-tertiary)] hover:text-[var(--color-primary-500)] transition-colors">
+                    <i class="fas fa-life-ring mr-1"></i>
+                    @L["footer.support"]
+                </a>
+            </div>
+
+            <!-- 右侧：状态指示 -->
+            <div class="flex items-center gap-3">
+                <div class="flex items-center gap-1.5 text-[0.625rem]">
+                    <span class="w-2 h-2 rounded-full bg-[var(--color-success-500)] animate-pulse"></span>
+                    <span class="text-[var(--color-text-tertiary)]">@L["footer.systemStatus"]</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <a href="https://github.com/flowforge"
+                       target="_blank"
+                       class="flex items-center justify-center w-6 h-6 rounded
+                              text-[var(--color-text-tertiary)] hover:text-[var(--color-text-primary)]
+                              hover:bg-[var(--color-bg-tertiary)] transition-all"
+                       title="GitHub">
+                        <i class="fab fa-github text-xs"></i>
+                    </a>
+                    <a href="https://twitter.com/flowforge"
+                       target="_blank"
+                       class="flex items-center justify-center w-6 h-6 rounded
+                              text-[var(--color-text-tertiary)] hover:text-[var(--color-text-primary)]
+                              hover:bg-[var(--color-bg-tertiary)] transition-all"
+                       title="Twitter">
+                        <i class="fab fa-twitter text-xs"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</footer>

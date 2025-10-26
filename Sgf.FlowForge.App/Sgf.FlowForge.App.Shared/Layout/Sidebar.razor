@@ -1,0 +1,176 @@
+﻿@using Sgf.FlowForge.App.Shared.Services
+@* Components/Layout/Sidebar.razor *@
+@inject LocalizationService L
+@inject NavigationManager Navigation
+
+<aside class="@GetSidebarClasses()">
+    <div class="flex flex-col h-full bg-[var(--color-bg-base)] border-r border-[var(--color-border-primary)]">
+
+        <!-- 侧边栏头部 -->
+        <div class="flex items-center justify-between p-4 border-b border-[var(--color-border-secondary)]">
+            <h2 class="text-xs font-semibold text-[var(--color-text-primary)]">
+                @L["nav.menu"]
+            </h2>
+            <button type="button"
+                    class="md:hidden flex items-center justify-center w-7 h-7 rounded-md
+                           text-[var(--color-text-tertiary)] hover:text-[var(--color-text-primary)]
+                           hover:bg-[var(--color-bg-secondary)] transition-all"
+                    @onclick="OnClose">
+                <i class="fas fa-times text-xs"></i>
+            </button>
+        </div>
+
+        <!-- 导航菜单 -->
+        <nav class="flex-1 overflow-y-auto p-3">
+            <div class="space-y-1">
+
+                <!-- 流程管理 -->
+                <div class="mb-4">
+                    <div class="px-2 py-1.5 text-[0.625rem] font-semibold text-[var(--color-text-tertiary)] uppercase tracking-wider">
+                        @L["nav.processManagement"]
+                    </div>
+                    <NavLink href="/designer" class="sidebar-link" Match="NavLinkMatch.All">
+                        <i class="fas fa-drafting-compass w-4"></i>
+                        <span>@L["nav.designer"]</span>
+                        <span class="ml-auto text-[0.625rem] px-1.5 py-0.5 rounded bg-[var(--color-primary-100)] text-[var(--color-primary-700)]">
+                            New
+                        </span>
+                    </NavLink>
+                    <NavLink href="/processes" class="sidebar-link">
+                        <i class="fas fa-list w-4"></i>
+                        <span>@L["nav.processList"]</span>
+                    </NavLink>
+                    <NavLink href="/templates" class="sidebar-link">
+                        <i class="fas fa-folder-open w-4"></i>
+                        <span>@L["nav.templates"]</span>
+                    </NavLink>
+                </div>
+
+                <!-- 开发工具 -->
+                <div class="mb-4">
+                    <div class="px-2 py-1.5 text-[0.625rem] font-semibold text-[var(--color-text-tertiary)] uppercase tracking-wider">
+                        @L["nav.devTools"]
+                    </div>
+                    <NavLink href="/codegen" class="sidebar-link">
+                        <i class="fas fa-code w-4"></i>
+                        <span>@L["nav.codeGen"]</span>
+                    </NavLink>
+                    <NavLink href="/editor" class="sidebar-link">
+                        <i class="fas fa-edit w-4"></i>
+                        <span>@L["nav.editor"]</span>
+                    </NavLink>
+                    <NavLink href="/build" class="sidebar-link">
+                        <i class="fas fa-hammer w-4"></i>
+                        <span>@L["nav.build"]</span>
+                    </NavLink>
+                </div>
+
+                <!-- 部署运维 -->
+                <div class="mb-4">
+                    <div class="px-2 py-1.5 text-[0.625rem] font-semibold text-[var(--color-text-tertiary)] uppercase tracking-wider">
+                        @L["nav.operations"]
+                    </div>
+                    <NavLink href="/deploy" class="sidebar-link">
+                        <i class="fas fa-rocket w-4"></i>
+                        <span>@L["nav.deploy"]</span>
+                    </NavLink>
+                    <NavLink href="/monitor" class="sidebar-link">
+                        <i class="fas fa-chart-line w-4"></i>
+                        <span>@L["nav.monitor"]</span>
+                    </NavLink>
+                    <NavLink href="/logs" class="sidebar-link">
+                        <i class="fas fa-file-alt w-4"></i>
+                        <span>@L["nav.logs"]</span>
+                    </NavLink>
+                </div>
+
+                <!-- 系统管理 -->
+                <div class="mb-4">
+                    <div class="px-2 py-1.5 text-[0.625rem] font-semibold text-[var(--color-text-tertiary)] uppercase tracking-wider">
+                        @L["nav.system"]
+                    </div>
+                    <NavLink href="/settings" class="sidebar-link">
+                        <i class="fas fa-cog w-4"></i>
+                        <span>@L["nav.settings"]</span>
+                    </NavLink>
+                    <NavLink href="/users" class="sidebar-link">
+                        <i class="fas fa-users w-4"></i>
+                        <span>@L["nav.users"]</span>
+                    </NavLink>
+                    <NavLink href="/help" class="sidebar-link">
+                        <i class="fas fa-question-circle w-4"></i>
+                        <span>@L["nav.help"]</span>
+                    </NavLink>
+                </div>
+            </div>
+        </nav>
+
+        <!-- 侧边栏底部 -->
+        <div class="p-3 border-t border-[var(--color-border-secondary)]">
+            <div class="flex items-center gap-2 px-2 py-2 rounded-md bg-[var(--color-bg-secondary)]">
+                <i class="fas fa-info-circle text-[var(--color-primary-500)] text-xs"></i>
+                <div class="flex-1 min-w-0">
+                    <div class="text-[0.625rem] font-semibold text-[var(--color-text-primary)]">
+                        FlowForge v1.0
+                    </div>
+                    <div class="text-[0.625rem] text-[var(--color-text-tertiary)]">
+                        .NET 10 + Blazor
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</aside>
+
+<style>
+    .sidebar-link {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem 0.75rem;
+        border-radius: 0.375rem;
+        font-size: 0.75rem;
+        font-weight: 500;
+        color: var(--color-text-secondary);
+        transition: all 0.15s ease;
+        text-decoration: none;
+    }
+
+        .sidebar-link:hover {
+            color: var(--color-text-primary);
+            background: var(--color-bg-secondary);
+        }
+
+        .sidebar-link.active {
+            color: var(--color-primary-700);
+            background: var(--color-primary-50);
+            font-weight: 600;
+        }
+
+        .sidebar-link i {
+            font-size: 0.6875rem;
+            text-align: center;
+        }
+</style>
+
+@code {
+    [Parameter] public bool IsOpen { get; set; }
+    [Parameter] public EventCallback OnClose { get; set; }
+
+    private string GetSidebarClasses()
+    {
+        var classes = new List<string>
+        {
+            "fixed md:sticky top-0 left-0 h-screen w-64",
+            "z-40 transition-transform duration-300",
+            "md:translate-x-0"
+        };
+
+        if (!IsOpen)
+        {
+            classes.Add("-translate-x-full");
+        }
+
+        return string.Join(" ", classes);
+    }
+}

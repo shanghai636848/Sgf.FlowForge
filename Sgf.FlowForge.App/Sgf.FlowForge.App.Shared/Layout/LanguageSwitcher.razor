@@ -1,0 +1,121 @@
+﻿@* LanguageSwitcher.razor - 语言切换器 *@
+@inject IJSRuntime JS
+
+<div class="relative inline-block">
+    <button type="button"
+            @onclick="ToggleDropdown"
+            class="flex items-center gap-1.5 h-7 px-2.5 rounded-md border border-[var(--color-border-primary)] bg-[var(--color-bg-base)] text-xs font-medium text-[var(--color-text-primary)] transition-all hover:bg-[var(--color-bg-secondary)] hover:border-[var(--color-primary-300)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary-500)] focus:ring-opacity-20">
+        <span class="text-sm">@GetCurrentFlag()</span>
+        @if (ShowLabel)
+        {
+            <span>@GetCurrentLabel()</span>
+        }
+        <svg class="w-3 h-3 transition-transform @(IsOpen ? "rotate-180" : "")"
+             fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+        </svg>
+    </button>
+
+    @if (IsOpen)
+    {
+        <div class="absolute right-0 mt-1.5 w-44 rounded-lg border border-[var(--color-border-primary)] bg-[var(--color-bg-base)] shadow-lg z-[var(--z-dropdown)] animate-slide-down">
+            <div class="py-1.5">
+                @foreach (var lang in _languages)
+                {
+                    <button type="button"
+                            @onclick="() => SelectLanguage(lang.Code)"
+                            class="@GetLanguageItemClasses(lang.Code)">
+                        <span class="text-base">@lang.Flag</span>
+                        <div class="flex-1 text-left">
+                            <div class="font-medium">@lang.Name</div>
+                            <div class="text-[0.6875rem] text-[var(--color-text-tertiary)]">@lang.NativeName</div>
+                        </div>
+                        @if (CurrentLanguage == lang.Code)
+                        {
+                            <svg class="w-3.5 h-3.5 text-[var(--color-primary-500)]"
+                                 fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                            </svg>
+                        }
+                    </button>
+                }
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter]
+    public bool ShowLabel { get; set; } = true;
+
+    [Parameter]
+    public EventCallback<string> OnLanguageChanged { get; set; }
+
+    private bool IsOpen { get; set; }
+    private string CurrentLanguage { get; set; } = "zh-CN";
+
+    private record LanguageOption(string Code, string Name, string NativeName, string Flag);
+
+    private readonly List<LanguageOption> _languages = new()
+    {
+        new("zh-CN", "简体中文", "简体中文", "🇨🇳"),
+        new("zh-TW", "繁體中文", "繁體中文", "🇹🇼"),
+        new("en-US", "English", "English", "🇺🇸"),
+        new("ja-JP", "日本語", "日本語", "🇯🇵"),
+        new("ko-KR", "한국어", "한국어", "🇰🇷"),
+        new("de-DE", "Deutsch", "Deutsch", "🇩🇪"),
+        new("fr-FR", "Français", "Français", "🇫🇷"),
+        new("es-ES", "Español", "Español", "🇪🇸")
+    };
+
+    protected override async Task OnInitializedAsync()
+    {
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            // 例如：从 localStorage 读取主题
+            CurrentLanguage = await JS.InvokeAsync<string>("localStorage.getItem", "language") ?? "zh-CN";
+
+            // 触发重新渲染（如果需要）
+            StateHasChanged();
+        }
+    }
+
+    private void ToggleDropdown()
+    {
+        IsOpen = !IsOpen;
+    }
+
+    private async Task SelectLanguage(string languageCode)
+    {
+        CurrentLanguage = languageCode;
+        IsOpen = false;
+
+        await JS.InvokeVoidAsync("localStorage.setItem", "language", languageCode);
+        await JS.InvokeVoidAsync("eval", $"document.documentElement.setAttribute('lang', '{languageCode}')");
+        await OnLanguageChanged.InvokeAsync(languageCode);
+    }
+
+    private string GetCurrentFlag()
+    {
+        return _languages.FirstOrDefault(l => l.Code == CurrentLanguage)?.Flag ?? "🇨🇳";
+    }
+
+    private string GetCurrentLabel()
+    {
+        return _languages.FirstOrDefault(l => l.Code == CurrentLanguage)?.Name ?? "简体中文";
+    }
+
+    private string GetLanguageItemClasses(string code)
+    {
+        var baseClasses = "w-full flex items-center gap-2.5 px-3 py-2 text-xs transition-colors";
+        var stateClasses = CurrentLanguage == code
+            ? "bg-[var(--color-primary-50)] text-[var(--color-primary-700)]"
+            : "text-[var(--color-text-primary)] hover:bg-[var(--color-bg-secondary)]";
+
+        return $"{baseClasses} {stateClasses}";
+    }
+}

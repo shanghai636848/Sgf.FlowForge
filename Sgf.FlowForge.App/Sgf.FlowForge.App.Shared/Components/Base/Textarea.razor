@@ -1,0 +1,134 @@
+﻿@using Sgf.FlowForge.App.Shared.Services
+@inject LocalizationService L
+
+<div class="@GetContainerClasses()">
+    @if (!string.IsNullOrEmpty(Label))
+    {
+        <label class="flex items-center gap-1.5 mb-1.5 text-xs font-semibold text-[var(--color-primary-700)]">
+            @if (!string.IsNullOrEmpty(LabelIcon))
+            {
+                <i class="@LabelIcon text-[0.625rem] text-[var(--color-primary-500)]"></i>
+            }
+            @Label
+            @if (Required)
+            {
+                <span class="text-[var(--color-error-500)]">*</span>
+            }
+        </label>
+    }
+
+    <div class="relative">
+        <textarea class="@GetTextareaClasses()"
+                  rows="@Rows"
+                  value="@Value"
+                  placeholder="@(Placeholder ?? L["component.input.placeholder"])"
+                  disabled="@Disabled"
+                  readonly="@Readonly"
+                  maxlength="@MaxLength"
+                  @oninput="HandleInput"
+                  @onblur="HandleBlur"
+                  @onfocus="HandleFocus"
+                  @attributes="AdditionalAttributes"></textarea>
+
+        @if (ShowCount && MaxLength > 0)
+        {
+            <div class="absolute bottom-2 right-2 text-[0.625rem] text-[var(--color-text-tertiary)]">
+                @(Value?.Length ?? 0) / @MaxLength
+            </div>
+        }
+    </div>
+
+    @if (!string.IsNullOrEmpty(Error))
+    {
+        <div class="mt-1 text-[0.625rem] text-[var(--color-error-500)] flex items-center gap-1">
+            <i class="fas fa-exclamation-circle"></i>
+            <span>@Error</span>
+        </div>
+    }
+    else if (!string.IsNullOrEmpty(Helper))
+    {
+        <div class="mt-1 text-[0.625rem] text-[var(--color-text-tertiary)]">
+            @Helper
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter] public string? Label { get; set; }
+    [Parameter] public string? LabelIcon { get; set; }
+    [Parameter] public string? Value { get; set; }
+    [Parameter] public EventCallback<string> ValueChanged { get; set; }
+    [Parameter] public string? Placeholder { get; set; }
+    [Parameter] public int Rows { get; set; } = 4;
+    [Parameter] public int MaxLength { get; set; } = 0;
+    [Parameter] public bool ShowCount { get; set; }
+    [Parameter] public bool Disabled { get; set; }
+    [Parameter] public bool Readonly { get; set; }
+    [Parameter] public bool Required { get; set; }
+    [Parameter] public bool Resizable { get; set; } = true;
+    [Parameter] public string? Error { get; set; }
+    [Parameter] public string? Helper { get; set; }
+    [Parameter] public EventCallback OnFocus { get; set; }
+    [Parameter] public EventCallback OnBlur { get; set; }
+    [Parameter(CaptureUnmatchedValues = true)]
+    public Dictionary<string, object>? AdditionalAttributes { get; set; }
+
+    private async Task HandleInput(ChangeEventArgs e)
+    {
+        Value = e.Value?.ToString();
+        await ValueChanged.InvokeAsync(Value);
+    }
+
+    private async Task HandleFocus()
+    {
+        await OnFocus.InvokeAsync();
+    }
+
+    private async Task HandleBlur()
+    {
+        await OnBlur.InvokeAsync();
+    }
+
+    private string GetContainerClasses()
+    {
+        return "flex flex-col w-full";
+    }
+
+    private string GetTextareaClasses()
+    {
+        var classes = new List<string>
+        {
+            "w-full rounded-md border transition-all duration-200",
+            "text-xs text-[var(--color-text-primary)]",
+            "placeholder:text-[var(--color-text-tertiary)]",
+            "px-2 py-1.5",
+            "focus:outline-none focus:ring-1"
+        };
+
+        // 可调整大小
+        classes.Add(Resizable ? "resize-y" : "resize-none");
+
+        // 状态样式
+        if (!string.IsNullOrEmpty(Error))
+        {
+            classes.Add("border-[var(--color-error-500)] focus:border-[var(--color-error-500)] focus:ring-[var(--color-error-100)]");
+        }
+        else
+        {
+            classes.Add("border-[var(--color-border-primary)] bg-[var(--color-bg-base)]");
+            classes.Add("hover:border-[var(--color-primary-400)]");
+            classes.Add("focus:border-[var(--color-primary-500)] focus:ring-[var(--color-primary-100)]");
+        }
+
+        if (Disabled)
+        {
+            classes.Add("opacity-50 cursor-not-allowed bg-[var(--color-bg-secondary)]");
+        }
+        else if (Readonly)
+        {
+            classes.Add("bg-[var(--color-bg-secondary)] cursor-default");
+        }
+
+        return string.Join(" ", classes);
+    }
+}

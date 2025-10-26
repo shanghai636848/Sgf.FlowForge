@@ -1,0 +1,64 @@
+﻿@using Sgf.FlowForge.App.Shared.Models
+<span class="@GetBadgeClasses()" @attributes="AdditionalAttributes">
+    @if (!string.IsNullOrEmpty(Icon))
+    {
+        <i class="@Icon"></i>
+    }
+    @ChildContent
+</span>
+
+@code {
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+    [Parameter] public string? Icon { get; set; }
+    [Parameter] public BadgeVariant Variant { get; set; } = BadgeVariant.Primary;
+    [Parameter] public bool Dot { get; set; }
+    [Parameter] public bool Pill { get; set; }
+    [Parameter(CaptureUnmatchedValues = true)]
+    public Dictionary<string, object>? AdditionalAttributes { get; set; }
+
+    private string GetBadgeClasses()
+    {
+        var classes = new List<string>
+        {
+            "inline-flex items-center gap-1",
+            "text-[0.625rem] font-medium",
+            "transition-all duration-200"
+        };
+
+        // 形状
+        if (Dot)
+        {
+            classes.Add("w-2 h-2 rounded-full p-0");
+        }
+        else
+        {
+            classes.Add(Pill ? "rounded-full px-2 py-0.5" : "rounded px-1.5 py-0.5");
+        }
+
+        // 变体样式
+        classes.Add(Variant switch
+        {
+            BadgeVariant.Primary =>
+                "bg-[var(--color-primary-100)] text-[var(--color-primary-700)] border border-[var(--color-primary-200)]",
+
+            BadgeVariant.Secondary =>
+                "bg-[var(--color-secondary-100)] text-[var(--color-secondary-700)] border border-[var(--color-secondary-200)]",
+
+            BadgeVariant.Success =>
+                "bg-[var(--color-success-50)] text-[var(--color-success-700)] border border-[var(--color-success-500)]",
+
+            BadgeVariant.Warning =>
+                "bg-[var(--color-warning-50)] text-[var(--color-warning-700)] border border-[var(--color-warning-500)]",
+
+            BadgeVariant.Error =>
+                "bg-[var(--color-error-50)] text-[var(--color-error-700)] border border-[var(--color-error-500)]",
+
+            BadgeVariant.Info =>
+                "bg-[var(--color-info-50)] text-[var(--color-info-700)] border border-[var(--color-info-500)]",
+
+            _ => "bg-[var(--color-gray-100)] text-[var(--color-gray-700)] border border-[var(--color-gray-200)]"
+        });
+
+        return string.Join(" ", classes);
+    }
+}

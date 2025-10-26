@@ -1,0 +1,162 @@
+﻿@using Sgf.FlowForge.App.Shared.Models
+@using Sgf.FlowForge.App.Shared.Services
+@* Components/Base/Select.razor *@
+@inject LocalizationService L
+@typeparam TValue
+
+<div class="@GetContainerClasses()">
+	@if (!string.IsNullOrEmpty(Label))
+	{
+		<label class="flex items-center gap-1.5 mb-1.5 text-xs font-semibold text-[var(--color-primary-700)]">
+			@if (!string.IsNullOrEmpty(LabelIcon))
+			{
+				<i class="@LabelIcon text-[0.625rem] text-[var(--color-primary-500)]"></i>
+			}
+			@Label
+			@if (Required)
+			{
+				<span class="text-[var(--color-error-500)]">*</span>
+			}
+		</label>
+	}
+
+	<div class="relative">
+		<select class="@GetSelectClasses()"
+				value="@Value"
+				disabled="@Disabled"
+				@onchange="HandleChange"
+				@attributes="AdditionalAttributes">
+
+			@if (!string.IsNullOrEmpty(Placeholder))
+			{
+				<option value="" disabled selected>@Placeholder</option>
+			}
+			@if (!string.IsNullOrEmpty(Placeholder))
+			{
+				<option value="" disabled selected>@Placeholder</option>
+			}
+
+			@if (Options != null)
+			{
+				@foreach (var option in Options)
+				{
+					<option value="@option.Value">@option.Label</option>
+				}
+			}
+
+			@ChildContent
+		</select>
+
+		<div class="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none">
+			<i class="fas fa-chevron-down text-[0.625rem] text-[var(--color-text-tertiary)]"></i>
+		</div>
+	</div>
+
+	@if (!string.IsNullOrEmpty(Error))
+	{
+		<div class="mt-1 text-[0.625rem] text-[var(--color-error-500)] flex items-center gap-1">
+			<i class="fas fa-exclamation-circle"></i>
+			<span>@Error</span>
+		</div>
+	}
+	else if (!string.IsNullOrEmpty(Helper))
+	{
+		<div class="mt-1 text-[0.625rem] text-[var(--color-text-tertiary)]">
+			@Helper
+		</div>
+	}
+</div>
+@code {
+	[Parameter] public string? Label { get; set; }
+	[Parameter] public string? LabelIcon { get; set; }
+	[Parameter] public TValue? Value { get; set; }
+	[Parameter] public EventCallback<TValue> ValueChanged { get; set; }
+	[Parameter] public string? Placeholder { get; set; }
+	[Parameter] public List<SelectOption<TValue>>? Options { get; set; }
+	[Parameter] public RenderFragment? ChildContent { get; set; }
+	[Parameter] public InputSize Size { get; set; } = InputSize.Medium;
+	[Parameter] public bool Disabled { get; set; }
+	[Parameter] public bool Required { get; set; }
+	[Parameter] public string? Error { get; set; }
+	[Parameter] public string? Helper { get; set; }
+	[Parameter(CaptureUnmatchedValues = true)]
+	public Dictionary<string, object>? AdditionalAttributes { get; set; }
+	private async Task HandleChange(ChangeEventArgs e)
+	{
+		if (e.Value != null)
+		{
+			var stringValue = e.Value.ToString();
+			TValue? newValue = default;
+
+			if (typeof(TValue) == typeof(string))
+			{
+				newValue = (TValue)(object)stringValue!;
+			}
+			else if (typeof(TValue) == typeof(int))
+			{
+				if (int.TryParse(stringValue, out var intValue))
+					newValue = (TValue)(object)intValue;
+			}
+			else if (typeof(TValue) == typeof(Guid))
+			{
+				if (Guid.TryParse(stringValue, out var guidValue))
+					newValue = (TValue)(object)guidValue;
+			}
+
+			Value = newValue;
+			await ValueChanged.InvokeAsync(newValue);
+		}
+	}
+
+	private string GetContainerClasses()
+	{
+		return "flex flex-col w-full";
+	}
+
+	private string GetSelectClasses()
+	{
+		var classes = new List<string>
+	{
+		"w-full rounded-md border transition-all duration-200",
+		"text-xs text-[var(--color-text-primary)]",
+		"bg-[var(--color-bg-base)] appearance-none",
+		"cursor-pointer",
+		"focus:outline-none focus:ring-1"
+	};
+
+		// 尺寸
+		classes.Add(Size switch
+		{
+			InputSize.Small => "h-6 px-2 py-1 pr-7",
+			InputSize.Medium => "h-7 px-2 py-1.5 pr-7",
+			InputSize.Large => "h-8 px-2.5 py-2 pr-8",
+			_ => "h-7 px-2 py-1.5 pr-7"
+		});
+
+		// 状态样式
+		if (!string.IsNullOrEmpty(Error))
+		{
+			classes.Add("border-[var(--color-error-500)] focus:border-[var(--color-error-500)] focus:ring-[var(--color-error-100)]");
+		}
+		else
+		{
+			classes.Add("border-[var(--color-border-primary)]");
+			classes.Add("hover:border-[var(--color-primary-400)]");
+			classes.Add("focus:border-[var(--color-primary-500)] focus:ring-[var(--color-primary-100)]");
+		}
+
+		if (Disabled)
+		{
+			classes.Add("opacity-50 cursor-not-allowed bg-[var(--color-bg-secondary)]");
+		}
+
+		return string.Join(" ", classes);
+	}
+
+	public class SelectOption<TValue>
+	{
+		public TValue? Value { get; set; }
+		public string Label { get; set; } = string.Empty;
+	}
+}
+

@@ -1,0 +1,69 @@
+{
+  "common": {
+    "confirm": "确认",
+    "cancel": "取消",
+    "save": "保存",
+    "delete": "删除",
+    "edit": "编辑",
+    "add": "添加",
+    "search": "搜索",
+    "filter": "筛选",
+    "reset": "重置",
+    "submit": "提交",
+    "back": "返回",
+    "next": "下一步",
+    "previous": "上一步",
+    "finish": "完成",
+    "close": "关闭",
+    "loading": "加载中...",
+    "noData": "暂无数据",
+    "actions": "操作",
+    "success": "成功",
+    "error": "错误",
+    "warning": "警告",
+    "info": "信息"
+  },
+  "validation": {
+    "required": "此字段为必填项",
+    "email": "请输入有效的邮箱地址",
+    "minLength": "最少需要 {0} 个字符",
+    "maxLength": "最多允许 {0} 个字符",
+    "pattern": "格式不正确"
+  },
+  "theme": {
+    "light": "浅色主题",
+    "dark": "深色主题",
+    "violet": "紫罗兰",
+    "pink": "粉红主题",
+    "auto": "跟随系统"
+  },
+  "language": {
+    "zhCN": "简体中文",
+    "enUS": "English",
+    "jaJP": "日本語"
+  },
+  "component": {
+    "button": {
+      "loading": "加载中..."
+    },
+    "input": {
+      "placeholder": "请输入"
+    },
+    "select": {
+      "placeholder": "请选择",
+      "noOptions": "无可用选项"
+    },
+    "pagination": {
+      "total": "共 {0} 条",
+      "pageSize": "每页 {0} 条",
+      "goto": "跳转"
+    },
+    "table": {
+      "empty": "暂无数据"
+    },
+    "upload": {
+      "text": "点击或拖拽文件到此处上传",
+      "hint": "支持单个或批量上传"
+    }
+  }
+}

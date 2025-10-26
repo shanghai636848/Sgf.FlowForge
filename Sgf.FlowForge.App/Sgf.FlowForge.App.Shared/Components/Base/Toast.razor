@@ -1,0 +1,102 @@
+﻿@using Sgf.FlowForge.App.Shared.Services
+@inject ToastService ToastService
+@implements IDisposable
+
+<div class="fixed top-4 right-4 z-[var(--z-toast)] flex flex-col gap-2 pointer-events-none">
+    @foreach (var toast in _toasts)
+    {
+        <div class="@GetToastClasses(toast.Type) pointer-events-auto animate-slide-down"
+             @key="toast.Id">
+            <div class="flex items-start gap-2">
+                <i class="@GetIcon(toast.Type) flex-shrink-0 mt-0.5"></i>
+
+                <div class="flex-1 min-w-0">
+                    <div class="text-[0.6875rem] break-words">@toast.Message</div>
+                </div>
+
+                <button type="button"
+                        class="flex-shrink-0 ml-2 opacity-70 hover:opacity-100 transition-opacity"
+                        @onclick="() => RemoveToast(toast.Id)">
+                    <i class="fas fa-times text-[0.625rem]"></i>
+                </button>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    private List<ToastMessage> _toasts = new();
+
+    protected override void OnInitialized()
+    {
+        ToastService.OnShow += HandleShow;
+    }
+
+    private void HandleShow(ToastMessage message)
+    {
+        _toasts.Add(message);
+        StateHasChanged();
+
+        // 自动移除
+        _ = Task.Delay(message.Duration).ContinueWith(_ =>
+        {
+            RemoveToast(message.Id);
+        });
+    }
+
+    private void RemoveToast(string id)
+    {
+        var toast = _toasts.FirstOrDefault(t => t.Id == id);
+        if (toast != null)
+        {
+            _toasts.Remove(toast);
+            InvokeAsync(StateHasChanged);
+        }
+    }
+
+    private string GetToastClasses(ToastType type)
+    {
+        var classes = new List<string>
+        {
+            "min-w-[18rem] max-w-sm",
+            "rounded-md p-3 shadow-lg border",
+            "backdrop-blur-sm"
+        };
+
+        classes.Add(type switch
+        {
+            ToastType.Success =>
+                "bg-[var(--color-success-50)]/95 border-[var(--color-success-500)] text-[var(--color-success-700)]",
+
+            ToastType.Warning =>
+                "bg-[var(--color-warning-50)]/95 border-[var(--color-warning-500)] text-[var(--color-warning-700)]",
+
+            ToastType.Error =>
+                "bg-[var(--color-error-50)]/95 border-[var(--color-error-500)] text-[var(--color-error-700)]",
+
+            ToastType.Info =>
+                "bg-[var(--color-info-50)]/95 border-[var(--color-info-500)] text-[var(--color-info-700)]",
+
+            _ => "bg-[var(--color-info-50)]/95 border-[var(--color-info-500)] text-[var(--color-info-700)]"
+        });
+
+        return string.Join(" ", classes);
+    }
+
+    private string GetIcon(ToastType type)
+    {
+        return type switch
+        {
+            ToastType.Success => "fas fa-check-circle text-[0.75rem]",
+            ToastType.Warning => "fas fa-exclamation-triangle text-[0.75rem]",
+            ToastType.Error => "fas fa-times-circle text-[0.75rem]",
+            ToastType.Info => "fas fa-info-circle text-[0.75rem]",
+            _ => "fas fa-info-circle text-[0.75rem]"
+        };
+    }
+
+    public void Dispose()
+    {
+        ToastService.OnShow -= HandleShow;
+    }
+}

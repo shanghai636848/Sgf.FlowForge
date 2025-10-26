@@ -1,0 +1,271 @@
+﻿@using Sgf.FlowForge.App.Shared.Components.Base
+@using Sgf.FlowForge.App.Shared.Models
+@using Sgf.FlowForge.App.Shared.Services
+@* Components/Layout/NavMenu.razor *@
+@inject NavigationManager Navigation
+@inject LocalizationService L
+
+<nav class="space-y-1">
+    @foreach (var group in GetNavigationGroups())
+    {
+        <!-- 分组标题 -->
+        @if (!string.IsNullOrEmpty(group.Title))
+        {
+            <div class="px-2 py-1.5 text-[0.625rem] font-semibold text-[var(--color-text-tertiary)] uppercase tracking-wider">
+                @L[group.Title]
+            </div>
+        }
+
+        <!-- 菜单项 -->
+        @foreach (var item in group.Items)
+        {
+            @if (item.Children?.Any() == true)
+            {
+                <!-- 带子菜单的项 -->
+                <div class="@(item.IsExpanded ? "space-y-0.5" : "")">
+                    <button type="button"
+                            class="@GetMenuItemClasses(item, true)"
+                            @onclick="() => ToggleMenuItem(item)">
+                        <div class="flex items-center gap-2 flex-1 min-w-0">
+                            <i class="@item.Icon @GetIconColor(item)"></i>
+                            <span class="flex-1 text-left truncate">@L[item.TitleKey]</span>
+                        </div>
+                        <i class="fas fa-chevron-@(item.IsExpanded ? "down" : "right") text-[0.5rem] text-[var(--color-text-tertiary)]"></i>
+                    </button>
+
+                    @if (item.IsExpanded)
+                    {
+                        <div class="ml-6 space-y-0.5 animate-slide-down">
+                            @foreach (var child in item.Children)
+                            {
+                                <a href="@child.Url"
+                                   class="@GetMenuItemClasses(child, false)">
+                                    <i class="@child.Icon @GetIconColor(child) text-[0.625rem]"></i>
+                                    <span class="truncate">@L[child.TitleKey]</span>
+                                    @if (!string.IsNullOrEmpty(child.Badge))
+                                    {
+                                        <Badge Variant="BadgeVariant.Primary" class="ml-auto">
+                                            @child.Badge
+                                        </Badge>
+                                    }
+                                </a>
+                            }
+                        </div>
+                    }
+                </div>
+            }
+            else
+            {
+                <!-- 单个菜单项 -->
+                <a href="@item.Url"
+                   class="@GetMenuItemClasses(item, false)">
+                    <i class="@item.Icon @GetIconColor(item)"></i>
+                    <span class="flex-1 truncate">@L[item.TitleKey]</span>
+                    @if (!string.IsNullOrEmpty(item.Badge))
+                    {
+                        <Badge Variant="BadgeVariant.Error" Dot="true"></Badge>
+                    }
+                </a>
+            }
+        }
+
+        <!-- 分组分隔线 -->
+        @if (group != GetNavigationGroups().Last())
+        {
+            <div class="my-2 border-t border-[var(--color-border-secondary)]"></div>
+        }
+    }
+</nav>
+
+@code {
+    private List<NavigationGroup> _groups = new();
+
+    protected override void OnInitialized()
+    {
+        _groups = GetNavigationGroups();
+    }
+
+    private void ToggleMenuItem(MenuItem item)
+    {
+        item.IsExpanded = !item.IsExpanded;
+        StateHasChanged();
+    }
+
+    private string GetMenuItemClasses(MenuItem item, bool hasChildren)
+    {
+        var isActive = !hasChildren && IsActive(item.Url);
+        
+        var classes = new List<string>
+        {
+            "flex items-center gap-2 px-2 py-1.5 rounded-md",
+            "text-xs font-medium transition-all",
+            "w-full text-left"
+        };
+
+        if (isActive)
+        {
+            classes.Add("bg-gradient-to-r from-[var(--color-primary-100)] to-[var(--color-accent-100)]");
+            classes.Add("text-[var(--color-primary-700)] shadow-sm");
+        }
+        else
+        {
+            classes.Add("text-[var(--color-text-secondary)]");
+            classes.Add("hover:bg-[var(--color-bg-tertiary)] hover:text-[var(--color-text-primary)]");
+        }
+
+        return string.Join(" ", classes);
+    }
+
+    private string GetIconColor(MenuItem item)
+    {
+        return IsActive(item.Url) 
+            ? $"text-[var(--color-{item.Color ?? "primary"}-500)]" 
+            : "";
+    }
+
+    private bool IsActive(string url)
+    {
+        if (string.IsNullOrEmpty(url) || url == "/") return false;
+        return Navigation.Uri.Contains(url);
+    }
+
+    private List<NavigationGroup> GetNavigationGroups()
+    {
+        return new List<NavigationGroup>
+        {
+            new NavigationGroup
+            {
+                Title = "",
+                Items = new List<MenuItem>
+                {
+                    new MenuItem 
+                    { 
+                        Icon = "fas fa-home", 
+                        TitleKey = "navigation.home", 
+                        Url = "/",
+                        Color = "primary"
+                    },
+                    new MenuItem 
+                    { 
+                        Icon = "fas fa-tachometer-alt", 
+                        TitleKey = "navigation.dashboard", 
+                        Url = "/dashboard",
+                        Color = "accent"
+                    }
+                }
+            },
+            new NavigationGroup
+            {
+                Title = "navigation.workflow",
+                Items = new List<MenuItem>
+                {
+                    new MenuItem 
+                    { 
+                        Icon = "fas fa-drafting-compass", 
+                        TitleKey = "navigation.designer", 
+                        Url = "/designer",
+                        Color = "primary",
+                        Badge = "Beta"
+                    },
+                    new MenuItem 
+                    { 
+                        Icon = "fas fa-code", 
+                        TitleKey = "navigation.codegen", 
+                        Url = "/codegen",
+                        Color = "secondary"
+                    },
+                    new MenuItem 
+                    { 
+                        Icon = "fas fa-edit", 
+                        TitleKey = "navigation.editor", 
+                        Url = "/editor",
+                        Color = "accent"
+                    }
+                }
+            },
+            new NavigationGroup
+            {
+                Title = "navigation.devops",
+                Items = new List<MenuItem>
+                {
+                    new MenuItem 
+                    { 
+                        Icon = "fas fa-hammer", 
+                        TitleKey = "navigation.build", 
+                        Url = "/build",
+                        Color = "warning"
+                    },
+                    new MenuItem 
+                    { 
+                        Icon = "fas fa-rocket", 
+                        TitleKey = "navigation.deploy", 
+                        Url = "/deploy",
+                        Color = "success"
+                    },
+                    new MenuItem 
+                    { 
+                        Icon = "fas fa-chart-line", 
+                        TitleKey = "navigation.monitor", 
+                        Url = "/monitor",
+                        Color = "info"
+                    }
+                }
+            },
+            new NavigationGroup
+            {
+                Title = "navigation.project",
+                Items = new List<MenuItem>
+                {
+                    new MenuItem 
+                    { 
+                        Icon = "fas fa-folder-open", 
+                        TitleKey = "navigation.projects", 
+                        Url = "/projects",
+                        Color = "primary",
+                        Children = new List<MenuItem>
+                        {
+                            new MenuItem { Icon = "fas fa-list", TitleKey = "navigation.allProjects", Url = "/projects/all" },
+                            new MenuItem { Icon = "fas fa-star", TitleKey = "navigation.favorites", Url = "/projects/favorites" },
+                            new MenuItem { Icon = "fas fa-clock", TitleKey = "navigation.recent", Url = "/projects/recent" }
+                        }
+                    },
+                    new MenuItem 
+                    { 
+                        Icon = "fas fa-layer-group", 
+                        TitleKey = "navigation.templates", 
+                        Url = "/templates",
+                        Color = "secondary"
+                    },
+                    new MenuItem 
+                    { 
+                        Icon = "fas fa-archive", 
+                        TitleKey = "navigation.archive", 
+                        Url = "/archive",
+                        Color = "gray"
+                    }
+                }
+            },
+            new NavigationGroup
+            {
+                Title = "navigation.settings",
+                Items = new List<MenuItem>
+                {
+                    new MenuItem 
+                    { 
+                        Icon = "fas fa-cog", 
+                        TitleKey = "navigation.settings", 
+                        Url = "/settings",
+                        Color = "gray"
+                    },
+                    new MenuItem 
+                    { 
+                        Icon = "fas fa-question-circle", 
+                        TitleKey = "navigation.help", 
+                        Url = "/help",
+                        Color = "info"
+                    }
+                }
+            }
+        };
+    }
+}

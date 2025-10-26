@@ -1,0 +1,69 @@
+{
+  "common": {
+    "confirm": "Confirm",
+    "cancel": "Cancel",
+    "save": "Save",
+    "delete": "Delete",
+    "edit": "Edit",
+    "add": "Add",
+    "search": "Search",
+    "filter": "Filter",
+    "reset": "Reset",
+    "submit": "Submit",
+    "back": "Back",
+    "next": "Next",
+    "previous": "Previous",
+    "finish": "Finish",
+    "close": "Close",
+    "loading": "Loading...",
+    "noData": "No Data",
+    "actions": "Actions",
+    "success": "Success",
+    "error": "Error",
+    "warning": "Warning",
+    "info": "Info"
+  },
+  "validation": {
+    "required": "This field is required",
+    "email": "Please enter a valid email address",
+    "minLength": "Minimum {0} characters required",
+    "maxLength": "Maximum {0} characters allowed",
+    "pattern": "Invalid format"
+  },
+  "theme": {
+    "light": "Light Theme",
+    "dark": "Dark Theme",
+    "violet": "Violet Theme",
+    "pink": "Pink Theme",
+    "auto": "Auto"
+  },
+  "language": {
+    "zhCN": "简体中文",
+    "enUS": "English",
+    "jaJP": "日本語"
+  },
+  "component": {
+    "button": {
+      "loading": "Loading..."
+    },
+    "input": {
+      "placeholder": "Please input"
+    },
+    "select": {
+      "placeholder": "Please select",
+      "noOptions": "No options available"
+    },
+    "pagination": {
+      "total": "Total {0} items",
+      "pageSize": "{0} per page",
+      "goto": "Go to"
+    },
+    "table": {
+      "empty": "No data available"
+    },
+    "upload": {
+      "text": "Click or drag file to this area to upload",
+      "hint": "Support single or bulk upload"
+    }
+  }
+}

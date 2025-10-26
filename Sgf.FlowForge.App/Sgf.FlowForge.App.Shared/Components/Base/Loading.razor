@@ -1,0 +1,117 @@
+﻿<div class="@GetContainerClasses()">
+    @if (Type == "spinner")
+    {
+        <div class="@GetSpinnerClasses()"></div>
+    }
+    else if (Type == "dots")
+    {
+        <div class="flex items-center gap-1">
+            <div class="@GetDotClasses()" style="animation-delay: 0ms"></div>
+            <div class="@GetDotClasses()" style="animation-delay: 150ms"></div>
+            <div class="@GetDotClasses()" style="animation-delay: 300ms"></div>
+        </div>
+    }
+    else if (Type == "bars")
+    {
+        <div class="flex items-end gap-0.5 h-6">
+            <div class="@GetBarClasses()" style="animation-delay: 0ms"></div>
+            <div class="@GetBarClasses()" style="animation-delay: 150ms"></div>
+            <div class="@GetBarClasses()" style="animation-delay: 300ms"></div>
+            <div class="@GetBarClasses()" style="animation-delay: 450ms"></div>
+        </div>
+    }
+
+    @if (!string.IsNullOrEmpty(Text))
+    {
+        <div class="mt-2 text-xs text-[var(--color-text-secondary)]">@Text</div>
+    }
+</div>
+
+@code {
+    [Parameter] public string Type { get; set; } = "spinner"; // spinner, dots, bars
+    [Parameter] public string Size { get; set; } = "md"; // sm, md, lg
+    [Parameter] public string? Text { get; set; }
+    [Parameter] public bool Fullscreen { get; set; }
+
+    private string GetContainerClasses()
+    {
+        var classes = new List<string>
+        {
+            "flex flex-col items-center justify-center"
+        };
+
+        if (Fullscreen)
+        {
+            classes.Add("fixed inset-0 bg-[var(--color-overlay)] backdrop-blur-sm z-[var(--z-overlay)]");
+        }
+
+        return string.Join(" ", classes);
+    }
+
+    private string GetSpinnerClasses()
+    {
+        var classes = new List<string>
+        {
+            "border-[var(--color-primary-200)] border-t-[var(--color-primary-500)]",
+            "rounded-full animate-spin"
+        };
+
+        classes.Add(Size switch
+        {
+            "sm" => "w-4 h-4 border-2",
+            "md" => "w-6 h-6 border-2",
+            "lg" => "w-8 h-8 border-[3px]",
+            _ => "w-6 h-6 border-2"
+        });
+
+        return string.Join(" ", classes);
+    }
+
+    private string GetDotClasses()
+    {
+        var classes = new List<string>
+        {
+            "bg-[var(--color-primary-500)] rounded-full animate-pulse"
+        };
+
+        classes.Add(Size switch
+        {
+            "sm" => "w-1.5 h-1.5",
+            "md" => "w-2 h-2",
+            "lg" => "w-2.5 h-2.5",
+            _ => "w-2 h-2"
+        });
+
+        return string.Join(" ", classes);
+    }
+
+    private string GetBarClasses()
+    {
+        var classes = new List<string>
+        {
+            "bg-[var(--color-primary-500)] rounded-sm",
+            "animate-[bar_1s_ease-in-out_infinite]"
+        };
+
+        classes.Add(Size switch
+        {
+            "sm" => "w-1",
+            "md" => "w-1.5",
+            "lg" => "w-2",
+            _ => "w-1.5"
+        });
+
+        return string.Join(" ", classes);
+    }
+}
+
+<style>
+    @@keyframes bar {
+        0%, 100% {
+            height: 25%;
+        }
+        50% {
+            height: 100%;
+        }
+    }
+</style>

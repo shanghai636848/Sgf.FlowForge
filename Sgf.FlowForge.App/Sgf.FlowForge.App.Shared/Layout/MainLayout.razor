@@ -1,0 +1,78 @@
+﻿@using Sgf.FlowForge.App.Shared.Services
+@* Components/Layout/MainLayout.razor *@
+@inherits LayoutComponentBase
+@inject NavigationManager Navigation
+@inject ThemeService ThemeService
+@inject LocalizationService L
+
+<div class="flex flex-col min-h-screen bg-[var(--color-bg-base)] transition-colors duration-200">
+
+    <!-- 顶部导航栏 -->
+    <Header OnMenuToggle="ToggleSidebar" />
+
+    <!-- 主内容区 -->
+    <div class="flex flex-1 overflow-hidden">
+
+        <!-- 侧边栏 -->
+        <Sidebar IsOpen="_sidebarOpen" OnClose="CloseSidebar" />
+
+        <!-- 内容区域 -->
+        <main class="flex-1 overflow-auto">
+            <!-- 面包屑导航 -->
+            <div class="sticky top-0 z-10 bg-[var(--color-bg-base)]/95 backdrop-blur-sm border-b border-[var(--color-border-secondary)]">
+                <div class="container mx-auto px-4 py-2">
+                    <Breadcrumb />
+                </div>
+            </div>
+
+            <!-- 页面内容 -->
+            <div class="container mx-auto px-4 py-6">
+                @Body
+            </div>
+        </main>
+    </div>
+
+    <!-- 底部信息栏 -->
+    <Footer />
+
+    <!-- 移动端遮罩层 -->
+    @if (_sidebarOpen)
+    {
+        <div class="fixed inset-0 bg-[var(--color-overlay)] z-30 md:hidden animate-fade-in"
+             @onclick="CloseSidebar"></div>
+    }
+</div>
+
+<!-- 全局 Toast -->
+<Toast />
+
+@code {
+    private bool _sidebarOpen = false;
+
+    protected override void OnInitialized()
+    {
+        Navigation.LocationChanged += OnLocationChanged;
+    }
+
+    private void OnLocationChanged(object? sender, LocationChangedEventArgs e)
+    {
+        // 路由改变时关闭侧边栏（移动端）
+        _sidebarOpen = false;
+        InvokeAsync(StateHasChanged);
+    }
+
+    private void ToggleSidebar()
+    {
+        _sidebarOpen = !_sidebarOpen;
+    }
+
+    private void CloseSidebar()
+    {
+        _sidebarOpen = false;
+    }
+
+    public void Dispose()
+    {
+        Navigation.LocationChanged -= OnLocationChanged;
+    }
+}

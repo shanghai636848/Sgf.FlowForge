@@ -1,0 +1,159 @@
+﻿@using Sgf.FlowForge.App.Shared.Models
+<div class="@GetContainerClasses()">
+	<!-- 标签头部 -->
+	<div class="@GetTabHeaderClasses()">
+		@foreach (var (tab, index) in TabItems.Select((t, i) => (t, i)))
+		{
+			<button type="button"
+					class="@GetTabButtonClasses(index)"
+					@onclick="() => SelectTab(index)">
+				@if (!string.IsNullOrEmpty(tab.Icon))
+				{
+					<i class="@tab.Icon"></i>
+				}
+				<span>@tab.Title</span>
+				@if (tab.Badge > 0)
+				{
+					<Badge Variant="BadgeVariant.Primary" Pill="true">@tab.Badge</Badge>
+				}
+			</button>
+		}
+	</div>
+
+	<!-- 标签内容 -->
+	<div class="@GetTabContentClasses()">
+		@if (_activeIndex >= 0 && _activeIndex < TabItems.Count)
+		{
+			@TabItems[_activeIndex].Content
+		}
+	</div>
+</div>
+
+@code {
+	[Parameter] public List<TabItem> TabItems { get; set; } = new();
+	[Parameter] public int ActiveIndex { get; set; } = 0;
+	[Parameter] public EventCallback<int> ActiveIndexChanged { get; set; }
+	[Parameter] public TabVariant Variant { get; set; } = TabVariant.Line;
+	[Parameter] public bool Animated { get; set; } = true;
+
+	private int _activeIndex;
+
+	protected override void OnInitialized()
+	{
+		_activeIndex = ActiveIndex;
+	}
+
+	private async Task SelectTab(int index)
+	{
+		if (index != _activeIndex && index >= 0 && index < TabItems.Count)
+		{
+			_activeIndex = index;
+			await ActiveIndexChanged.InvokeAsync(index);
+		}
+	}
+
+	private string GetContainerClasses()
+	{
+		return "flex flex-col w-full";
+	}
+
+	private string GetTabHeaderClasses()
+	{
+		var classes = new List<string>
+		{
+			"flex items-center gap-1"
+		};
+
+		if (Variant == TabVariant.Line)
+		{
+			classes.Add("border-b border-[var(--color-border-secondary)]");
+		}
+		else if (Variant == TabVariant.Card)
+		{
+			classes.Add("bg-[var(--color-bg-secondary)] p-1 rounded-t-lg");
+		}
+
+		return string.Join(" ", classes);
+	}
+
+	private string GetTabButtonClasses(int index)
+	{
+		var isActive = index == _activeIndex;
+		var classes = new List<string>
+		{
+			"flex items-center gap-1.5 px-3 py-2",
+			"text-xs font-medium transition-all duration-200",
+			"focus:outline-none"
+		};
+
+		if (Variant == TabVariant.Line)
+		{
+			classes.Add("border-b-2 -mb-px");
+			if (isActive)
+			{
+				classes.Add("border-[var(--color-primary-500)] text-[var(--color-primary-600)]");
+			}
+			else
+			{
+				classes.Add("border-transparent text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:border-[var(--color-border-primary)]");
+			}
+		}
+		else if (Variant == TabVariant.Card)
+		{
+			classes.Add("rounded-md");
+			if (isActive)
+			{
+				classes.Add("bg-[var(--color-bg-base)] text-[var(--color-primary-600)] shadow-sm");
+			}
+			else
+			{
+				classes.Add("text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-bg-base)]/50");
+			}
+		}
+		else if (Variant == TabVariant.Pill)
+		{
+			classes.Add("rounded-full");
+			if (isActive)
+			{
+				classes.Add("bg-[var(--color-primary-500)] text-white");
+			}
+			else
+			{
+				classes.Add("text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-bg-secondary)]");
+			}
+		}
+
+		return string.Join(" ", classes);
+	}
+
+	private string GetTabContentClasses()
+	{
+		var classes = new List<string>
+		{
+			"p-4"
+		};
+
+		if (Animated)
+		{
+			classes.Add("animate-fade-in");
+		}
+
+		return string.Join(" ", classes);
+	}
+
+	public class TabItem
+	{
+		public string Title { get; set; } = string.Empty;
+		public string? Icon { get; set; }
+		public int Badge { get; set; }
+		public RenderFragment? Content { get; set; }
+	}
+
+	public enum TabVariant
+	{
+		Line,
+		Card,
+		Pill
+	}
+}
+

@@ -1,0 +1,84 @@
+﻿@using Sgf.FlowForge.App.Shared.Models
+<div class="@GetAlertClasses()" role="alert" @attributes="AdditionalAttributes">
+    <div class="flex items-start gap-2">
+        <i class="@GetIcon() flex-shrink-0 mt-0.5"></i>
+
+        <div class="flex-1 min-w-0">
+            @if (!string.IsNullOrEmpty(Title))
+            {
+                <div class="text-xs font-semibold mb-1">@Title</div>
+            }
+            <div class="text-[0.6875rem]">
+                @ChildContent
+            </div>
+        </div>
+
+        @if (Closable)
+        {
+            <button type="button"
+                    class="flex-shrink-0 ml-2 opacity-70 hover:opacity-100 transition-opacity"
+                    @onclick="HandleClose">
+                <i class="fas fa-times text-[0.625rem]"></i>
+            </button>
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+    [Parameter] public string? Title { get; set; }
+    [Parameter] public AlertType Type { get; set; } = AlertType.Info;
+    [Parameter] public bool Closable { get; set; }
+    [Parameter] public EventCallback OnClose { get; set; }
+    [Parameter(CaptureUnmatchedValues = true)]
+    public Dictionary<string, object>? AdditionalAttributes { get; set; }
+
+    private bool _visible = true;
+
+    private async Task HandleClose()
+    {
+        _visible = false;
+        await OnClose.InvokeAsync();
+    }
+
+    private string GetAlertClasses()
+    {
+        if (!_visible) return "hidden";
+
+        var classes = new List<string>
+        {
+            "rounded-md p-3 border animate-fade-in"
+        };
+
+        classes.Add(Type switch
+        {
+            AlertType.Success =>
+                "bg-[var(--color-success-50)] border-[var(--color-success-500)] text-[var(--color-success-700)]",
+
+            AlertType.Warning =>
+                "bg-[var(--color-warning-50)] border-[var(--color-warning-500)] text-[var(--color-warning-700)]",
+
+            AlertType.Error =>
+                "bg-[var(--color-error-50)] border-[var(--color-error-500)] text-[var(--color-error-700)]",
+
+            AlertType.Info =>
+                "bg-[var(--color-info-50)] border-[var(--color-info-500)] text-[var(--color-info-700)]",
+
+            _ => "bg-[var(--color-info-50)] border-[var(--color-info-500)] text-[var(--color-info-700)]"
+        });
+
+        return string.Join(" ", classes);
+    }
+
+    private string GetIcon()
+    {
+        return Type switch
+        {
+            AlertType.Success => "fas fa-check-circle text-[0.75rem]",
+            AlertType.Warning => "fas fa-exclamation-triangle text-[0.75rem]",
+            AlertType.Error => "fas fa-times-circle text-[0.75rem]",
+            AlertType.Info => "fas fa-info-circle text-[0.75rem]",
+            _ => "fas fa-info-circle text-[0.75rem]"
+        };
+    }
+}

@@ -1,0 +1,99 @@
+﻿<label class="@GetContainerClasses()">
+	<input type="checkbox"
+		   class="@GetCheckboxClasses()"
+		   checked="@Checked"
+		   disabled="@Disabled"
+		   @onchange="HandleChange"
+		   @attributes="AdditionalAttributes" />
+
+	@if (!string.IsNullOrEmpty(Label) || ChildContent != null)
+	{
+		<span class="text-xs text-[var(--color-text-primary)] select-none">
+			@if (ChildContent != null)
+			{
+				@ChildContent
+			}
+			else
+			{
+				@Label
+			}
+		</span>
+	}
+</label>
+
+@code {
+	[Parameter] public bool Checked { get; set; }
+	[Parameter] public EventCallback<bool> CheckedChanged { get; set; }
+	[Parameter] public string? Label { get; set; }
+	[Parameter] public RenderFragment? ChildContent { get; set; }
+	[Parameter] public bool Disabled { get; set; }
+	[Parameter] public CheckboxSize Size { get; set; } = CheckboxSize.Medium;
+	[Parameter(CaptureUnmatchedValues = true)]
+	public Dictionary<string, object>? AdditionalAttributes { get; set; }
+
+	private async Task HandleChange(ChangeEventArgs e)
+	{
+		if (!Disabled)
+		{
+			Checked = e.Value is bool value && value;
+			await CheckedChanged.InvokeAsync(Checked);
+		}
+	}
+
+	private string GetContainerClasses()
+	{
+		var classes = new List<string>
+		{
+			"inline-flex items-center gap-2"
+		};
+
+		if (!Disabled)
+		{
+			classes.Add("cursor-pointer");
+		}
+		else
+		{
+			classes.Add("cursor-not-allowed opacity-50");
+		}
+
+		return string.Join(" ", classes);
+	}
+
+	private string GetCheckboxClasses()
+	{
+		var classes = new List<string>
+		{
+			"rounded border-2 transition-all duration-200",
+			"cursor-pointer appearance-none flex-shrink-0",
+			"checked:bg-[var(--color-primary-500)] checked:border-[var(--color-primary-500)]",
+			"focus:outline-none focus:ring-2 focus:ring-[var(--color-primary-200)] focus:ring-offset-1"
+		};
+
+		// 尺寸
+		classes.Add(Size switch
+		{
+			CheckboxSize.Small => "w-3.5 h-3.5",
+			CheckboxSize.Medium => "w-4 h-4",
+			CheckboxSize.Large => "w-5 h-5",
+			_ => "w-4 h-4"
+		});
+
+		if (!Disabled)
+		{
+			classes.Add("border-[var(--color-border-primary)] hover:border-[var(--color-primary-400)]");
+		}
+		else
+		{
+			classes.Add("cursor-not-allowed");
+		}
+
+		return string.Join(" ", classes);
+	}
+	public enum CheckboxSize
+	{
+		Small,
+		Medium,
+		Large
+	}
+}
+

@@ -1,0 +1,17 @@
+{
+  "name": "sgf.flowforge.app.shared",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build:css": "npx @tailwindcss/cli -i ./wwwroot/css/app.css -o ./wwwroot/css/app.min.css"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@tailwindcss/cli": "^4.1.15",
+    "tailwindcss": "^4.1.15"
+  }
+}

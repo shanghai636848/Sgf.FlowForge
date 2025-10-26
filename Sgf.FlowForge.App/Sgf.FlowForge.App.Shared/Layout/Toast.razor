@@ -1,0 +1,197 @@
+﻿@* Toast.razor - 消息提示组件 *@
+@implements IDisposable
+
+<div class="@GetContainerClasses()">
+    @foreach (var toast in _toasts)
+    {
+        <div class="@GetToastClasses(toast)" @key="toast.Id">
+            <div class="@GetIconContainerClasses(toast.Type)">
+                @GetIcon(toast.Type)
+            </div>
+
+            <div class="flex-1 min-w-0">
+                @if (!string.IsNullOrEmpty(toast.Title))
+                {
+                    <div class="font-semibold text-xs text-[var(--color-text-primary)] mb-0.5">
+                        @toast.Title
+                    </div>
+                }
+                <div class="text-[0.6875rem] text-[var(--color-text-secondary)] leading-relaxed">
+                    @toast.Message
+                </div>
+            </div>
+
+            @if (toast.Closable)
+            {
+                <button type="button"
+                        @onclick="() => RemoveToast(toast.Id)"
+                        class="flex-shrink-0 w-5 h-5 flex items-center justify-center rounded hover:bg-[var(--color-gray-200)] text-[var(--color-text-tertiary)] hover:text-[var(--color-text-primary)] transition-colors"
+                        aria-label="关闭">
+                    <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
+                    </svg>
+                </button>
+            }
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter]
+    public string Position { get; set; } = "top-right"; // top-left, top-right, top-center, bottom-left, bottom-right, bottom-center
+
+    [Parameter]
+    public int MaxToasts { get; set; } = 5;
+
+    private List<ToastItem> _toasts = new();
+
+    public class ToastItem
+    {
+        public string Id { get; set; } = Guid.NewGuid().ToString();
+        public string Type { get; set; } = "info"; // success, error, warning, info
+        public string? Title { get; set; }
+        public string Message { get; set; } = "";
+        public int Duration { get; set; } = 3000;
+        public bool Closable { get; set; } = true;
+        public bool IsVisible { get; set; } = false;
+    }
+
+    public void Show(string message, string type = "info", string? title = null, int duration = 3000, bool closable = true)
+    {
+        // 移除超出限制的旧 toast
+        while (_toasts.Count >= MaxToasts)
+        {
+            var oldest = _toasts.FirstOrDefault();
+            if (oldest != null)
+            {
+                _toasts.Remove(oldest);
+            }
+        }
+
+        var toast = new ToastItem
+        {
+            Message = message,
+            Type = type,
+            Title = title,
+            Duration = duration,
+            Closable = closable
+        };
+
+        _toasts.Add(toast);
+        StateHasChanged();
+
+        // 动画显示
+        _ = Task.Run(async () =>
+        {
+            await Task.Delay(10);
+            toast.IsVisible = true;
+            await InvokeAsync(StateHasChanged);
+
+            if (duration > 0)
+            {
+                await Task.Delay(duration);
+                await RemoveToastAsync(toast.Id);
+            }
+        });
+    }
+
+    public void Success(string message, string? title = null, int duration = 3000)
+        => Show(message, "success", title ?? "成功", duration);
+
+    public void Error(string message, string? title = null, int duration = 4000)
+        => Show(message, "error", title ?? "错误", duration);
+
+    public void Warning(string message, string? title = null, int duration = 3500)
+        => Show(message, "warning", title ?? "警告", duration);
+
+    public void Info(string message, string? title = null, int duration = 3000)
+        => Show(message, "info", title ?? "提示", duration);
+
+    private async Task RemoveToast(string id)
+    {
+        var toast = _toasts.FirstOrDefault(t => t.Id == id);
+        if (toast != null)
+        {
+            toast.IsVisible = false;
+            StateHasChanged();
+            await Task.Delay(200);
+            _toasts.Remove(toast);
+            StateHasChanged();
+        }
+    }
+
+    private async Task RemoveToastAsync(string id)
+    {
+        await InvokeAsync(() => RemoveToast(id));
+    }
+
+    private string GetContainerClasses()
+    {
+        var baseClasses = "fixed z-[var(--z-toast)] flex flex-col gap-2 pointer-events-none";
+
+        var positionClasses = Position switch
+        {
+            "top-left" => "top-4 left-4",
+            "top-center" => "top-4 left-1/2 -translate-x-1/2",
+            "top-right" => "top-4 right-4",
+            "bottom-left" => "bottom-4 left-4",
+            "bottom-center" => "bottom-4 left-1/2 -translate-x-1/2",
+            "bottom-right" => "bottom-4 right-4",
+            _ => "top-4 right-4"
+        };
+
+        return $"{baseClasses} {positionClasses}";
+    }
+
+    private string GetToastClasses(ToastItem toast)
+    {
+        var baseClasses = "flex items-start gap-2.5 min-w-[18rem] max-w-[22rem] p-3 rounded-lg bg-[var(--color-bg-base)] border shadow-lg pointer-events-auto transition-all duration-200";
+
+        var visibilityClasses = toast.IsVisible
+            ? "opacity-100 translate-y-0"
+            : "opacity-0 -translate-y-2";
+
+        var borderColor = toast.Type switch
+        {
+            "success" => "border-[var(--color-success-200)]",
+            "error" => "border-[var(--color-error-200)]",
+            "warning" => "border-[var(--color-warning-200)]",
+            _ => "border-[var(--color-info-200)]"
+        };
+
+        return $"{baseClasses} {visibilityClasses} {borderColor}";
+    }
+
+    private string GetIconContainerClasses(string type)
+    {
+        var baseClasses = "flex-shrink-0 w-5 h-5 flex items-center justify-center rounded-full text-white text-[0.625rem] font-bold";
+
+        var colorClasses = type switch
+        {
+            "success" => "bg-[var(--color-success-500)]",
+            "error" => "bg-[var(--color-error-500)]",
+            "warning" => "bg-[var(--color-warning-500)]",
+            _ => "bg-[var(--color-info-500)]"
+        };
+
+        return $"{baseClasses} {colorClasses}";
+    }
+
+    private MarkupString GetIcon(string type)
+    {
+        var icon = type switch
+        {
+            "success" => "<svg class=\"w-3 h-3\" fill=\"currentColor\" viewBox=\"0 0 20 20\"><path fill-rule=\"evenodd\" d=\"M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z\" clip-rule=\"evenodd\" /></svg>",
+            "error" => "<svg class=\"w-3 h-3\" fill=\"currentColor\" viewBox=\"0 0 20 20\"><path fill-rule=\"evenodd\" d=\"M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z\" clip-rule=\"evenodd\" /></svg>",
+            "warning" => "<svg class=\"w-3 h-3\" fill=\"currentColor\" viewBox=\"0 0 20 20\"><path fill-rule=\"evenodd\" d=\"M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z\" clip-rule=\"evenodd\" /></svg>",
+            _ => "<svg class=\"w-3 h-3\" fill=\"currentColor\" viewBox=\"0 0 20 20\"><path fill-rule=\"evenodd\" d=\"M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z\" clip-rule=\"evenodd\" /></svg>"
+        };
+
+        return new MarkupString(icon);
+    }
+
+    public void Dispose()
+    {
+        _toasts.Clear();
+    }
+}
